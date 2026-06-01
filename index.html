@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스케줄 메이커</title>
+<script>
+  (function(d) {
+    var config = {
+      kitId: 'esw2jrb',
+      scriptTimeout: 3000,
+      async: true
+    },
+    h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load({kitId:config.kitId,scriptTimeout:config.scriptTimeout,async:config.async,active:function(){document.fonts.ready.then(function(){if(typeof drawSchedule==='function')drawSchedule();});}})}catch(e){}};s.parentNode.insertBefore(tk,s)
+  })(document);
+</script>
+    <link href="https://fonts.googleapis.com/css2?family=Malgun+Gothic&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Mbc1961';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-01@1.0/MBC1961M.woff2') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: block;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Malgun Gothic', 'Dotum', sans-serif; background: #f0f2f5; min-height: 100vh; padding: 32px 24px; color: #1a1a2e; }
+        .page-header { max-width: 1600px; margin: 0 auto 28px; display: flex; align-items: center; gap: 12px; }
+        .page-header .logo-icon { width: 42px; height: 42px; background: #1a1a2e; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .page-header h1 { font-size: 22px; font-weight: bold; color: #1a1a2e; letter-spacing: -0.5px; }
+        .page-header .badge { margin-left: auto; font-size: 11px; font-weight: bold; color: #888; background: #e8e8ee; padding: 4px 10px; border-radius: 20px; }
+        .main-layout { display: flex; flex-direction: row; gap: 20px; max-width: 1600px; margin: 0 auto; align-items: flex-start; }
+        .input-section { flex: 1; max-width: 620px; display: flex; flex-direction: column; gap: 14px; }
+        .preview-section { flex: 1.5; position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px; }
+        @media (max-width: 1100px) { .main-layout { flex-direction: column-reverse; align-items: center; } .input-section { max-width: 100%; width: 100%; } .preview-section { position: static; width: 100%; } }
+        .card { background: #fff; border-radius: 16px; padding: 22px 24px; border: 1px solid #ebebf0; }
+        .card-title { font-size: 12px; font-weight: bold; color: #999; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .card-title::after { content: ''; flex: 1; height: 1px; background: #f0f0f3; }
+        .drop-zone { border: 1.5px dashed #d8d8e8; border-radius: 12px; padding: 28px 20px; text-align: center; background: #fafafe; cursor: pointer; transition: all 0.2s; }
+        .drop-zone:hover { background: #f3f3ff; border-color: #a0a0f0; }
+        .drop-zone.dragover { background: #eeeeff; border-color: #6666dd; }
+        .drop-icon { display: flex; justify-content: center; color: #9090c0; margin-bottom: 10px; }
+        .drop-text { font-size: 14px; font-weight: bold; color: #444; margin-bottom: 4px; }
+        .drop-subtext { font-size: 12px; color: #aaa; }
+        .upload-link { color: #5555dd; font-weight: bold; cursor: pointer; }
+        .uploaded-file-container { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f5f5ff; border-radius: 10px; border: 1px solid #e0e0f8; }
+        .file-info { display: flex; align-items: center; gap: 8px; }
+        .file-dot { width: 8px; height: 8px; border-radius: 50%; background: #6666dd; flex-shrink: 0; }
+        .file-name { font-weight: bold; color: #5555bb; font-size: 13px; }
+        .btn-remove-img { color: #ff5a5a; background: none; border: 1px solid #ffcccc; padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .image-control-panel { background: #fafafe; border: 1px solid #ebebf8; border-radius: 10px; padding: 14px 16px; margin-top: 10px; display: none; }
+        .zoom-slider { flex: 1; accent-color: #6666dd; cursor: pointer; }
+        .drag-hint { font-size: 11px; color: #aaa; margin-top: 8px; text-align: center; }
+        .reset-btn { background: #fff; border: 1px solid #e0e0f0; border-radius: 8px; padding: 0 10px; height: 30px; cursor: pointer; font-size: 11px; font-weight: bold; color: #666; white-space: nowrap; flex-shrink: 0; }
+        .zoom-controls { display: flex; align-items: center; gap: 8px; }
+        .control-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .control-row-label { font-size: 16px; width: 28px; text-align: center; flex-shrink: 0; }
+        .flip-btns { display: flex; gap: 6px; margin-top: 10px; }
+        .flip-btn { flex: 1; background: #fff; border: 1px solid #e0e0f0; border-radius: 8px; padding: 7px 0; cursor: pointer; font-size: 12px; font-weight: bold; color: #555; text-align: center; }
+        .flip-btn.active { background: #eeeeff; border-color: #8888dd; color: #5555cc; }
+        .form-hint { font-size: 12px; color: #999; text-align: center; padding: 10px 16px; background: #f8f8fb; border-radius: 8px; border: 1px solid #efeff4; margin-bottom: 4px; }
+        .form-hint b { color: #6666dd; }
+        .day-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f5f5f8; }
+        .day-col-body { display: flex; flex: 1; gap: 12px; align-items: center; min-width: 0; }
+        .day-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .day-row:first-child { padding-top: 0; }
+        .day-col-left { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 72px; flex-shrink: 0; }
+        .day-label { font-size: 12px; font-weight: bold; color: #555; }
+        .sat .day-label { color: #4477cc; } .sun .day-label { color: #cc4444; }
+        .day-col-center { display: flex; flex-direction: column; flex: 1; gap: 6px; min-width: 0; }
+        .day-col-body { display: flex; flex: 1; gap: 12px; align-items: center; min-width: 0; }
+        .day-col-right { display: flex; flex-direction: column; width: 132px; gap: 6px; flex-shrink: 0; }
+        .day-input, .time-input, .platform-select { width: 100%; padding: 9px 12px; border: 1px solid #e8e8f0; border-radius: 8px; font-family: 'Malgun Gothic', sans-serif; font-size: 13px; color: #333; background: #fff; outline: none; }
+        .sub-input { background: #fafafe; font-size: 12px; color: #777; }
+        .time-input { text-align: center; }
+        /* ── 드럼롤 시간 피커 ── */
+        .time-picker-wrap { position: relative; }
+        .time-display-btn {
+            width: 100%; padding: 9px 8px; border: 1px solid #e8e8f0; border-radius: 8px;
+            font-family: 'Malgun Gothic', sans-serif; font-size: 13px; color: #333;
+            background: #fff; outline: none; cursor: pointer; text-align: center;
+            font-weight: bold; letter-spacing: 1px;
+        }
+        .time-display-btn:hover { border-color: #a0a0f0; background: #fafafe; }
+        .platform-select { cursor: pointer; font-size: 12px; padding: 8px 6px; }
+        .offline-text { font-size: 12px; font-weight: bold; color: #cc4444; text-align: center; padding: 0; background: #fff5f5; border-radius: 8px; border: 1px dashed #ffcccc; display: none; align-items: center; justify-content: center; flex: 1; width: 100%; height: calc(9px*2 + 13px + 6px + 9px*2 + 12px); line-height: calc(9px*2 + 13px + 6px + 9px*2 + 12px); }
+        .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .toggle-switch input { display: none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ddd; transition: .25s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .25s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input:checked + .slider { background: #6666dd; }
+        input:checked + .slider:before { transform: translateX(18px); }
+        #artistName { width: 100%; padding: 10px 14px; border: 1px solid #e8e8f0; border-radius: 10px; font-family: 'Malgun Gothic', sans-serif; font-size: 13px; color: #333; outline: none; margin-top: 12px; }
+        #artistName::placeholder { color: #bbb; }
+        /* ── 드럼롤 시간 피커 ── */
+        .time-picker-wrap { position: relative; width: 100%; }
+        .time-display-btn {
+            width: 100%; padding: 9px 8px; border: 1px solid #e8e8f0; border-radius: 8px;
+            font-family: 'Malgun Gothic', sans-serif; font-size: 13px; color: #333;
+            background: #fff; outline: none; cursor: pointer; text-align: center;
+            font-weight: bold; letter-spacing: 1px;
+        }
+        .time-display-btn:hover { border-color: #a0a0f0; background: #fafafe; }
+        .btn-group { display: flex; gap: 10px; margin-top: 4px; }
+                .time-ampm-row { display: flex; gap: 4px; }
+        .time-half { flex: 6; min-width: 0; }
+        .ampm-half { flex: 4; padding: 8px 2px !important; text-align: center; font-weight: bold; }
+        .ampm-select { width: 100%; padding: 8px 6px; border: 1px solid #e8e8f0; border-radius: 8px; font-family: 'Malgun Gothic', sans-serif; font-size: 12px; color: #333; background: #fff; outline: none; cursor: pointer; margin-top: 2px; }
+                .action-btn { border: none; padding: 14px 20px; font-size: 14px; cursor: pointer; border-radius: 12px; font-weight: bold; font-family: 'Malgun Gothic', sans-serif; flex: 1; transition: all 0.2s; }
+        .btn-download { background: #1a1a2e; color: #fff; }
+        .btn-clear { background: #fff; color: #cc4444; border: 1px solid #ffcccc; flex: 0 0 80px !important; }
+        .preview-label { font-size: 12px; font-weight: bold; color: #999; letter-spacing: 0.8px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; padding: 0 2px; }
+        .preview-label::after { content: ''; flex: 1; height: 1px; background: #ebebf0; }
+        #previewCanvas { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid #ebebf0; background: #f5f5f8; }
+        #previewCanvas.draggable { cursor: grab; }
+        #previewCanvas.dragging { cursor: grabbing; }
+    </style>
+</head>
+<body>
+<div style="font-family: 'Malgun Gothic'; position: absolute; opacity: 0;">.</div>
+<div style="font-family: 'Mbc1961'; position: absolute; opacity: 0;">.</div>
+<div class="page-header">
+    <div class="logo-icon">📅</div>
+    <h1>스케줄 메이커</h1>
+    <span class="badge">WEEKLY SCHEDULE</span>
+</div>
+<div class="main-layout">
+    <div class="input-section">
+        <div class="card">
+            <div class="card-title">일러스트 업로드</div>
+            <div class="drop-zone" id="dropZone" onclick="document.getElementById('illustUpload').click()">
+                <div class="drop-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline><path d="M10 13h6"></path><path d="M14 11l2 2-2 2"></path></svg></div>
+                <div class="drop-text">파일을 드래그하거나 <span class="upload-link">클릭하여 선택</span></div>
+                <div class="drop-subtext">배경 뒤에 들어갈 캐릭터 일러스트</div>
+            </div>
+            <input type="file" id="illustUpload" accept="image/*" onchange="handleImageUpload(event)" style="display: none;">
+            <div id="uploadPreview" style="display: none;">
+                <div class="uploaded-file-container">
+                    <div class="file-info"><div class="file-dot"></div><span id="uploadFileName" class="file-name">이미지 첨부 완료</span></div>
+                    <button onclick="removeIllust()" class="btn-remove-img">삭제</button>
+                </div>
+                <div class="image-control-panel" id="imageControlPanel">
+                    <div class="zoom-controls">
+                        <span class="control-row-label" title="크기">🔎</span>
+                        <input type="range" id="zoomSlider" class="zoom-slider" min="0.01" max="3" step="0.01" value="1" oninput="handleSliderChange()">
+                        <button class="reset-btn" onclick="resetIllustTransform()">초기화</button>
+                    </div>
+                    <div class="control-row">
+                        <span class="control-row-label" title="각도">📐</span>
+                        <input type="range" id="rotateSlider" class="zoom-slider" min="-180" max="180" step="1" value="0" oninput="handleRotateChange()">
+                        <span id="rotateVal" style="font-size:11px;color:#999;width:32px;text-align:right;flex-shrink:0;">0°</span>
+                        <button class="reset-btn" onclick="resetRotation()">초기화</button>
+                    </div>
+                    <div class="flip-btns">
+                        <button class="flip-btn" id="flipHBtn" onclick="toggleFlip('h')">⇄ 가로 반전</button>
+                        <button class="flip-btn" id="flipVBtn" onclick="toggleFlip('v')">⇅ 세로 반전</button>
+                    </div>
+                    <div class="drag-hint">미리보기 화면을 드래그하여 위치를 조정하세요</div>
+                </div>
+            </div>
+            <input type="text" id="artistName" class="sched-input" placeholder="일러스트레이터 이름 (예: @Artist_Name)">
+        </div>
+        <div class="card">
+            <div class="card-title">요일별 스케줄</div>
+            <div class="form-hint">텍스트에 <b>//</b> 를 넣으면 줄바꿈이 됩니다</div>
+            <div id="daysContainer">
+<div class="day-row mon"><div class="day-col-left"><span class="day-label">월요일</span><label class="toggle-switch"><input type="checkbox" id="mon_type" class="sched-toggle" checked onchange="toggleInputs('mon')"><span class="slider"></span></label></div><div class="day-col-body"><div id="mon_offline" style="display:none;width:100%"><input type="text" id="mon_off_text" class="sched-input day-input" placeholder="휴방 타이틀" style="width:100%"></div><div class="day-col-center" id="mon_online_area"><input type="text" id="mon" class="sched-input day-input" placeholder="시간"><input type="text" id="mon_sub" class="sched-input day-input sub-input" placeholder="메인 타이틀"></div></div></div>
+<div class="day-row tue"><div class="day-col-left"><span class="day-label">화요일</span><label class="toggle-switch"><input type="checkbox" id="tue_type" class="sched-toggle" checked onchange="toggleInputs('tue')"><span class="slider"></span></label></div><div class="day-col-body"><div id="tue_offline" style="display:none;width:100%"><input type="text" id="tue_off_text" class="sched-input day-input" placeholder="휴방 타이틀" style="width:100%"></div><div class="day-col-center" id="tue_online_area"><input type="text" id="tue" class="sched-input day-input" placeholder="시간"><input type="text" id="tue_sub" class="sched-input day-input sub-input" placeholder="메인 타이틀"></div></div></div>
+<div class="day-row wed"><div class="day-col-left"><span class="day-label">수요일</span><label class="toggle-switch"><input type="checkbox" id="wed_type" class="sched-toggle" checked onchange="toggleInputs('wed')"><span class="slider"></span></label></div><div class="day-col-body"><div id="wed_offline" style="display:none;width:100%"><input type="text" id="wed_off_text" class="sched-input day-input" placeholder="휴방 타이틀" style="width:100%"></div><div class="day-col-center" id="wed_online_area"><input type="text" id="wed" class="sched-input day-input" placeholder="시간"><input type="text" id="wed_sub" class="sched-input day-input sub-input" placeholder="메인 타이틀"></div></div></div>
+<div class="day-row thu"><div class="day-col-left"><span class="day-label">목요일</span><label class="toggle-switch"><input type="checkbox" id="thu_type" class="sched-toggle" checked onchange="toggleInputs('thu')"><span class="slider"></span></label></div><div class="day-col-body"><div id="thu_offline" style="display:none;width:100%"><input type="text" id="thu_off_text" class="sched-input day-input" placeholder="휴방 타이틀" style="width:100%"></div><div class="day-col-center" id="thu_online_area"><input type="text" id="thu" class="sched-input day-input" placeholder="시간"><input type="text" id="thu_sub" class="sched-input day-input sub-input" placeholder="메인 타이틀"></div></div></div>
+<div class="day-row fri"><div class="day-col-left"><span class="day-label">금요일</span><label class="toggle-switch"><input type="checkbox" id="fri_type" class="sched-toggle" checked onchange="toggleInputs('fri')"><span class="slider"></span></label></div><div class="day-col-body"><div id="fri_offline" style="display:none;width:100%"><input type="text" id="fri_off_text" class="sched-input day-input" placeholder="휴방 타이틀" style="width:100%"></div><div class="day-col-center" id="fri_online_area"><input type="text" id="fri" class="sched-input day-input" placeholder="시간"><input type="text" id="fri_sub" class="sched-input day-input sub-input" placeholder="메인 타이틀"></div></div></div>
+<div class="day-row sat"><div class="day-col-left"><span class="day-label">토요일</span><label class="toggle-switch"><input type="checkbox" id="sat_type" class="sched-toggle" checked onchange="toggleInputs('sat')"><span class="slider"></span></label></div><div class="day-col-body"><div id="sat_offline" style="display:none;width:100%"><input type="text" id="sat_off_text" class="sched-input day-input" placeholder="휴방 타이틀" style="width:100%"></div><div class="day-col-center" id="sat_online_area"><input type="text" id="sat" class="sched-input day-input" placeholder="시간"><input type="text" id="sat_sub" class="sched-input day-input sub-input" placeholder="메인 타이틀"></div></div></div>
+<div class="day-row sun"><div class="day-col-left"><span class="day-label">일요일</span><label class="toggle-switch"><input type="checkbox" id="sun_type" class="sched-toggle" checked onchange="toggleInputs('sun')"><span class="slider"></span></label></div><div class="day-col-body"><div id="sun_offline" style="display:none;width:100%"><input type="text" id="sun_off_text" class="sched-input day-input" placeholder="휴방 타이틀" style="width:100%"></div><div class="day-col-center" id="sun_online_area"><input type="text" id="sun" class="sched-input day-input" placeholder="시간"><input type="text" id="sun_sub" class="sched-input day-input sub-input" placeholder="메인 타이틀"></div></div></div>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button onclick="downloadImage()" class="action-btn btn-download">⬇ 이미지 저장</button>
+            <button onclick="clearData()" class="action-btn btn-clear">초기화</button>
+        </div>
+    </div>
+    <div class="preview-section">
+        <div class="preview-label">미리보기</div>
+        <canvas id="previewCanvas" width="1920" height="1080"></canvas>
+    </div>
+</div>
+</div>
+<script>
+    const config = {
+    imgSrc: 'image/bg.png',
+    illustBox: [122, 230, 616, 616],
+    textStyles: {
+        topMonth: {
+            font: 'gulim',
+            size: '0px',
+            color: '#f3ffe6',
+            align: 'center',
+            weight: 'normal'
+        },
+        topDay: {
+            font: '',
+            size: '0px',
+            color: '#f3ffe6',
+            align: 'center',
+            weight: 'normal',
+            letterSpacing: '4px'
+        },
+        dayDateOn: {
+            font: '',
+            size: '1px',
+            color: '#f8f9f2',
+            align: 'center',
+            weight: 'normal'
+        },
+        dayDateOff: {
+            font: '',
+            size: '0px',
+            color: '#f8f9f2',
+            align: 'center',
+            weight: 'normal'
+        },
+        mainTitle: {
+            font: 'gulim',
+            size: '24px',
+            color: '#ffffff',
+            align: 'left',
+            weight: 'normal',
+            letterSpacing: '-1.1px',
+            shadow: {color:'rgba(0,0,0,0.5)',blur:4,x:0,y:0}
+        },
+        subTitle: {
+            font: 'gulim',
+            size: '24px',
+            color: '#ffffff',
+            align: 'left',
+            weight: 'normal',
+            letterSpacing: '-1.1px',
+            shadow: {color:'rgba(0,0,0,0.5)',blur:4,x:0,y:0}
+        },
+        time: {
+            font: '',
+            size: '0px',
+            color: '#f8f9f2',
+            align: 'center',
+            weight: 'bold'
+        },
+        amPm: {
+            font: '',
+            size: '0px',
+            color: '#f8f9f2',
+            align: 'center',
+            weight: 'bold'
+        },
+        artistLabel: {
+            font: 'Mbc1961',
+            size: '0px',
+            color: '#27222f',
+            align: 'right',
+            weight: 'normal'
+        },
+        artist: {
+            font: 'Mbc1961',
+            size: '25px',
+            color: '#8f68dd',
+            align: 'right',
+            weight: 'normal',
+            rotate: -1.65
+        },
+        dateRangeStart: {
+            font: '',
+            size: '0px',
+            color: '#395541',
+            align: 'center',
+            weight: 'normal'
+        },
+        dateRangeEnd: {
+            font: '',
+            size: '0px',
+            color: '#395541',
+            align: 'center',
+            weight: 'normal'
+        }
+    },
+    textMaxWidth: 499,
+    innerCoords: {
+        dateOn: [238, 23],
+        dateOff: [238, 23],
+        title: [395, 41],
+        sub: [395, 70],
+        time: [476, 89],
+        icon: [656, 68],
+        amPm: [143, 23]
+    },
+    topDateCoords: {
+        startMonth: [0, 0],
+        startDate: [0, 0],
+        endMonth: [0, 0],
+        endDate: [0, 0]
+    },
+    dateRangeStartCoords: [273, 289],
+    dateRangeEndCoords: [513, 289],
+    platforms: {
+        chzzk: 'image/icon_chzzk.png',
+        youtube: 'image/icon_youtube.png',
+        twitch: 'image/icon_twitch.png',
+        soop: 'image/icon_soop.png'
+    },
+    iconSize: [47, 54],
+    artistLabelCoords: [605, 864],
+    artistCoords: [746, 862],
+    artistBgImage: null,
+    artistBgUse: false,
+    artistBgAlign: 'right',
+    artistPadding: [21, 12],
+    artistBgSlice: [32, 32],
+    offlineTextCoords: [395, 54],
+    topImageSrc: 'image/top.png',
+    topImageCoords: [1707, 482],
+    topImageSize: [187, 191],
+    dayConfig: {
+        mon: {
+            boxCoords: [892, 225],
+            boxSize: [951, 118],
+            boxOn: 'image/day_mon_on.png',
+            boxOff: 'image/day_mon_off.png'
+        },
+        tue: {
+            boxCoords: [892, 339],
+            boxSize: [951, 118],
+            boxOn: 'image/day_tue_on.png',
+            boxOff: 'image/day_tue_off.png'
+        },
+        wed: {
+            boxCoords: [892, 453],
+            boxSize: [951, 118],
+            boxOn: 'image/day_wed_on.png',
+            boxOff: 'image/day_wed_off.png'
+        },
+        thu: {
+            boxCoords: [892, 567],
+            boxSize: [951, 118],
+            boxOn: 'image/day_thu_on.png',
+            boxOff: 'image/day_thu_off.png'
+        },
+        fri: {
+            boxCoords: [892, 681],
+            boxSize: [951, 118],
+            boxOn: 'image/day_fri_on.png',
+            boxOff: 'image/day_fri_off.png'
+        },
+        sat: {
+            boxCoords: [892, 795],
+            boxSize: [951, 118],
+            boxOn: 'image/day_sat_on.png',
+            boxOff: 'image/day_sat_off.png'
+        },
+        sun: {
+            boxCoords: [892, 909],
+            boxSize: [951, 118],
+            boxOn: 'image/day_sun_on.png',
+            boxOff: 'image/day_sun_off.png'
+        }
+    }
+};
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d');
+    let uploadedIllust=null,illustBase64=null,isDrawing=false,needsRedraw=false;
+    // AM/PM은 요일별 개별 select로 관리
+    let weekData={startMonth:"",startDate:"",endMonth:"",endDate:"",dayTexts:[]};
+    let imgState={scale:1,x:0,y:0,rotate:0,flipH:false,flipV:false,isDragging:false,dragStartX:0,dragStartY:0};
+    let initImgState={scale:1,x:0,y:0};
+    const imageCache={};
+    function getCachedImage(src){if(!src||src.startsWith('#')||!src.includes('.'))return Promise.resolve(null);if(imageCache[src])return Promise.resolve(imageCache[src]);return new Promise(resolve=>{const img=new Image();img.onload=()=>{imageCache[src]=img;resolve(img);};img.onerror=()=>resolve(null);img.src=src;});}
+    function setupDropZone(){const dz=document.getElementById('dropZone'),fi=document.getElementById('illustUpload');dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});dz.addEventListener('dragleave',e=>{e.preventDefault();dz.classList.remove('dragover');});dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files?.length>0){fi.files=e.dataTransfer.files;handleImageUpload({target:fi});}});}
+    function handleImageUpload(event){const file=event.target.files[0];if(!file)return;document.getElementById('uploadFileName').textContent=file.name;document.getElementById('dropZone').style.display='none';document.getElementById('uploadPreview').style.display='block';document.getElementById('imageControlPanel').style.display='block';canvas.classList.add('draggable');const reader=new FileReader();reader.onload=e=>{illustBase64=e.target.result;loadIllustImage(illustBase64,true);};reader.readAsDataURL(file);}
+    function loadIllustImage(src,isNewUpload=false){if(!src){uploadedIllust=null;drawSchedule();return;}const img=new Image();img.onload=function(){uploadedIllust=img;if(isNewUpload){const[,,boxW,boxH]=config.illustBox;const baseScale=Math.min(boxW/img.width,boxH/img.height);imgState.scale=baseScale;imgState.x=config.illustBox[0]+(boxW-img.width*baseScale)/2;imgState.y=config.illustBox[1]+(boxH-img.height*baseScale)/2;imgState.rotate=0;imgState.flipH=false;imgState.flipV=false;initImgState={scale:baseScale,x:imgState.x,y:imgState.y};const slider=document.getElementById('zoomSlider');slider.min=baseScale*0.01;slider.max=baseScale*3;slider.value=baseScale;document.getElementById('rotateSlider').value=0;document.getElementById('rotateVal').textContent='0°';document.getElementById('flipHBtn').classList.remove('active');document.getElementById('flipVBtn').classList.remove('active');saveData(true);}else{document.getElementById('zoomSlider').value=imgState.scale;document.getElementById('rotateSlider').value=imgState.rotate||0;document.getElementById('rotateVal').textContent=(imgState.rotate||0)+'°';document.getElementById('flipHBtn').classList.toggle('active',!!imgState.flipH);document.getElementById('flipVBtn').classList.toggle('active',!!imgState.flipV);}drawSchedule();};img.src=src;}
+    function removeIllust(){illustBase64=null;uploadedIllust=null;document.getElementById('illustUpload').value='';document.getElementById('dropZone').style.display='block';document.getElementById('uploadPreview').style.display='none';document.getElementById('imageControlPanel').style.display='none';canvas.classList.remove('draggable');saveData();drawSchedule();}
+    function resetIllustTransform(){if(!uploadedIllust)return;imgState.scale=initImgState.scale;imgState.x=initImgState.x;imgState.y=initImgState.y;document.getElementById('zoomSlider').value=initImgState.scale;saveData();drawSchedule();}
+    function handleRotateChange(){const val=parseInt(document.getElementById('rotateSlider').value);document.getElementById('rotateVal').textContent=val+'°';imgState.rotate=val;saveData();drawSchedule();}
+    function resetRotation(){imgState.rotate=0;document.getElementById('rotateSlider').value=0;document.getElementById('rotateVal').textContent='0°';saveData();drawSchedule();}
+    function toggleFlip(dir){if(dir==='h'){imgState.flipH=!imgState.flipH;document.getElementById('flipHBtn').classList.toggle('active',imgState.flipH);}else{imgState.flipV=!imgState.flipV;document.getElementById('flipVBtn').classList.toggle('active',imgState.flipV);}saveData();drawSchedule();}
+    function handleSliderChange(){applyZoom(parseFloat(document.getElementById('zoomSlider').value));}
+    function applyZoom(newScale){if(!uploadedIllust)return;const cx=imgState.x+(uploadedIllust.width*imgState.scale)/2;const cy=imgState.y+(uploadedIllust.height*imgState.scale)/2;imgState.scale=newScale;imgState.x=cx-(uploadedIllust.width*newScale)/2;imgState.y=cy-(uploadedIllust.height*newScale)/2;saveData();drawSchedule();}
+    function setupCanvasDrag(){canvas.addEventListener('mousedown',e=>{if(!uploadedIllust)return;imgState.isDragging=true;imgState.dragStartX=e.clientX;imgState.dragStartY=e.clientY;canvas.classList.add('dragging');});window.addEventListener('mousemove',e=>{if(!imgState.isDragging||!uploadedIllust)return;const rect=canvas.getBoundingClientRect();imgState.x+=(e.clientX-imgState.dragStartX)*(canvas.width/rect.width);imgState.y+=(e.clientY-imgState.dragStartY)*(canvas.height/rect.height);imgState.dragStartX=e.clientX;imgState.dragStartY=e.clientY;drawSchedule();});window.addEventListener('mouseup',()=>{if(imgState.isDragging){imgState.isDragging=false;canvas.classList.remove('dragging');saveData();}});canvas.addEventListener('touchstart',e=>{if(!uploadedIllust||!e.touches.length)return;imgState.isDragging=true;imgState.dragStartX=e.touches[0].clientX;imgState.dragStartY=e.touches[0].clientY;if(e.cancelable)e.preventDefault();},{passive:false});window.addEventListener('touchmove',e=>{if(!imgState.isDragging||!uploadedIllust||!e.touches.length)return;const rect=canvas.getBoundingClientRect();imgState.x+=(e.touches[0].clientX-imgState.dragStartX)*(canvas.width/rect.width);imgState.y+=(e.touches[0].clientY-imgState.dragStartY)*(canvas.height/rect.height);imgState.dragStartX=e.touches[0].clientX;imgState.dragStartY=e.touches[0].clientY;drawSchedule();if(e.cancelable)e.preventDefault();},{passive:false});window.addEventListener('touchend',()=>{if(imgState.isDragging){imgState.isDragging=false;saveData();}});}
+    function toggleInputs(day){const on=document.getElementById(day+'_type').checked;const onArea=document.getElementById(day+'_online_area');if(onArea)onArea.style.display=on?'flex':'none';const offArea=document.getElementById(day+'_offline');if(offArea)offArea.style.display=on?'none':'block';drawSchedule();}
+    function drawSingleText(context,text,x,y,style){const rad=style.rotate?style.rotate*Math.PI/180:0;if(rad){context.save();context.translate(x,y);context.rotate(rad);x=0;y=0;}context.font=style.weight+' '+style.size+' "'+style.font+'"';context.fillStyle=style.color;context.textAlign=style.align;if('letterSpacing'in context)context.letterSpacing=style.letterSpacing||"0px";if(style.shadow){const s=style.shadow;context.shadowColor=s.color||'rgba(0,0,0,0.4)';context.shadowBlur=s.blur||4;context.shadowOffsetX=s.x||0;context.shadowOffsetY=s.y||0;}if(style.strokeColor&&style.strokeWidth){context.strokeStyle=style.strokeColor;context.lineWidth=style.strokeWidth;context.lineJoin="round";context.strokeText(text,x,y);}context.fillText(text,x,y);context.shadowColor='transparent';context.shadowBlur=0;context.shadowOffsetX=0;context.shadowOffsetY=0;if('letterSpacing'in context)context.letterSpacing="0px";if(rad)context.restore();}
+    function wrapText(context,text,x,y,maxWidth,style){const lineHeight=parseInt(style.size)*(style.lineHeight||1.4);const paragraphs=text.split('//').map(p=>p.trim());const allLines=[];context.font=style.weight+' '+style.size+' "'+style.font+'"';if('letterSpacing'in context)context.letterSpacing=style.letterSpacing||'0px';for(const para of paragraphs){const words=para.split('');let line='';for(const ch of words){const test=line+ch;if(context.measureText(test).width>maxWidth&&line.length>0){allLines.push(line);line=ch;}else{line=test;}}if(line.length>0)allLines.push(line);}const startY=y-((allLines.length-1)*lineHeight)/2;context.fillStyle=style.color;context.textBaseline='middle';if(style.shadow){const s=style.shadow;context.shadowColor=s.color||'rgba(0,0,0,0.4)';context.shadowBlur=s.blur||4;context.shadowOffsetX=s.x||0;context.shadowOffsetY=s.y||0;}allLines.forEach((line,li)=>{const ly=startY+li*lineHeight;const tw=context.measureText(line).width;let cx;if(style.align==='center')cx=x-tw/2;else if(style.align==='right')cx=x-tw;else cx=x;context.textAlign='left';if(style.strokeColor&&style.strokeWidth){context.strokeStyle=style.strokeColor;context.lineWidth=style.strokeWidth;context.lineJoin='round';context.strokeText(line,cx,ly);}context.fillText(line,cx,ly);});context.shadowColor='transparent';context.shadowBlur=0;context.shadowOffsetX=0;context.shadowOffsetY=0;if('letterSpacing'in context)context.letterSpacing='0px';context.textAlign=style.align||'left';}
+    function draw3SliceHorizontal(ctx,img,x,y,w,h,leftSlice,rightSlice){if(!img||!img.width)return;const sw2=img.width-leftSlice-rightSlice;const dw2=Math.ceil(w)-leftSlice-rightSlice;if(sw2<0||dw2<0)return;const dx=Math.floor(x),dy=Math.floor(y),dh=Math.ceil(h);ctx.drawImage(img,0,0,leftSlice,img.height,dx,dy,leftSlice,dh);ctx.drawImage(img,leftSlice,0,sw2,img.height,dx+leftSlice-0.5,dy,dw2+1,dh);ctx.drawImage(img,leftSlice+sw2,0,rightSlice,img.height,dx+leftSlice+dw2,dy,rightSlice,dh);}
+    async function drawSchedule(){if(isDrawing){needsRedraw=true;return;}isDrawing=true;try{const[mainBg,artistBgImg,topImg]=await Promise.all([getCachedImage(config.imgSrc),getCachedImage(config.artistBgImage),getCachedImage(config.topImageSrc)]);ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);if(uploadedIllust){const w=uploadedIllust.width*imgState.scale;const h=uploadedIllust.height*imgState.scale;const cx=imgState.x+w/2;const cy=imgState.y+h/2;ctx.save();ctx.translate(cx,cy);if(imgState.rotate)ctx.rotate(imgState.rotate*Math.PI/180);ctx.scale(imgState.flipH?-1:1,imgState.flipV?-1:1);ctx.drawImage(uploadedIllust,-w/2,-h/2,w,h);ctx.restore();}if(!mainBg){ctx.fillStyle="#333333";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#ff6b6b";ctx.font="bold 50px 'Malgun Gothic'";ctx.textAlign="center";ctx.fillText("배경 이미지(image/bg.png)를 찾을 수 없습니다!",canvas.width/2,canvas.height/2-50);}else{ctx.drawImage(mainBg,0,0,canvas.width,canvas.height);}if(weekData&&weekData.startMonth){const tc=config.topDateCoords;ctx.textBaseline="middle";drawSingleText(ctx,weekData.startMonth,tc.startMonth[0],tc.startMonth[1],config.textStyles.topMonth);drawSingleText(ctx,weekData.endMonth,tc.endMonth[0],tc.endMonth[1],config.textStyles.topMonth);drawSingleText(ctx,weekData.startDate,tc.startDate[0],tc.startDate[1],config.textStyles.topDay);drawSingleText(ctx,weekData.endDate,tc.endDate[0],tc.endDate[1],config.textStyles.topDay);const startText=weekData.startMonth+'.'+weekData.startDate;const endText=weekData.endMonth+'.'+weekData.endDate;if(config.dateRangeStartCoords){const[sx,sy]=config.dateRangeStartCoords;drawSingleText(ctx,startText,sx,sy,config.textStyles.dateRangeStart||{});}if(config.dateRangeEndCoords){const[ex,ey]=config.dateRangeEndCoords;drawSingleText(ctx,endText,ex,ey,config.textStyles.dateRangeEnd||{});}}ctx.textBaseline="middle";for(const[i,day]of['mon','tue','wed','thu','fri','sat','sun'].entries()){const dc=config.dayConfig[day];if(!dc)continue;const[boxX,boxY]=dc.boxCoords;const[boxW,boxH]=dc.boxSize;const isOnline=document.getElementById(day+'_type').checked;const boxImg=await getCachedImage(isOnline?dc.boxOn:dc.boxOff);if(boxImg){ctx.drawImage(boxImg,boxX,boxY,boxW,boxH);}else{ctx.fillStyle=isOnline?'#bbdefb':'#fff9c4';ctx.globalAlpha=0.8;ctx.fillRect(boxX,boxY,boxW,boxH);ctx.globalAlpha=1.0;}if(weekData.dayTexts[i]){const dateStyle=isOnline?(config.textStyles.dayDateOn||config.textStyles.dayDate):(config.textStyles.dayDateOff||config.textStyles.dayDate);const dateCoords=isOnline?config.innerCoords.dateOn:config.innerCoords.dateOff;drawSingleText(ctx,weekData.dayTexts[i],boxX+dateCoords[0],boxY+dateCoords[1],dateStyle);}if(isOnline){const main=document.getElementById(day).value;if(main)wrapText(ctx,main,boxX+config.innerCoords.title[0],boxY+config.innerCoords.title[1],config.textMaxWidth,config.textStyles.mainTitle);const sub=document.getElementById(day+'_sub').value;if(sub)wrapText(ctx,sub,boxX+config.innerCoords.sub[0],boxY+config.innerCoords.sub[1],config.textMaxWidth,config.textStyles.subTitle);}else{const offText=document.getElementById(day+'_off_text')?.value;if(offText)wrapText(ctx,offText,boxX+config.offlineTextCoords[0],boxY+config.offlineTextCoords[1],config.textMaxWidth,Object.assign({},config.textStyles.mainTitle));}}const artistName=document.getElementById('artistName').value;if(artistName){ctx.textBaseline="middle";drawSingleText(ctx,"ART BY",config.artistLabelCoords[0],config.artistLabelCoords[1],config.textStyles.artistLabel);const nStyle=config.textStyles.artist;ctx.font=nStyle.weight+' '+nStyle.size+' "'+nStyle.font+'"';if('letterSpacing'in ctx)ctx.letterSpacing=nStyle.letterSpacing||"0px";const nameW=ctx.measureText(artistName).width;const boxW=nameW+config.artistPadding[0]*2;const boxH=parseInt(nStyle.size)+config.artistPadding[1]*2;const boxX=config.artistCoords[0]-boxW;const boxY=config.artistCoords[1]-boxH;if(artistBgImg){draw3SliceHorizontal(ctx,artistBgImg,boxX,boxY,boxW,boxH,config.artistBgSlice[0],config.artistBgSlice[1]);}drawSingleText(ctx,artistName,boxX+boxW-config.artistPadding[0],boxY+boxH/2+2,nStyle);if('letterSpacing'in ctx)ctx.letterSpacing="0px";}if(topImg&&config.topImageSize[0]>0){ctx.drawImage(topImg,config.topImageCoords[0],config.topImageCoords[1],config.topImageSize[0],config.topImageSize[1]);}}finally{isDrawing=false;if(needsRedraw){needsRedraw=false;drawSchedule();}}}
+    function saveData(showAlert=false){const data={};document.querySelectorAll('.sched-input,.sched-select').forEach(el=>{data[el.id]=el.value;});document.querySelectorAll('.sched-toggle').forEach(chk=>{data[chk.id]=chk.checked;});data.illust=illustBase64;data.imgState=imgState;try{localStorage.setItem('scheduleDataFinal',JSON.stringify(data));}catch{data.illust=null;localStorage.setItem('scheduleDataFinal',JSON.stringify(data));if(showAlert)alert("첨부된 이미지 용량이 커서 브라우저에 임시 저장할 수 없습니다.");}}
+    function loadData(){const saved=localStorage.getItem('scheduleDataFinal');if(!saved)return;const data=JSON.parse(saved);for(const key in data){if(key==='imgState'||key==='illust')continue;const el=document.getElementById(key);if(el)el.type==='checkbox'?(el.checked=data[key]):(el.value=data[key]);}if(data.imgState)imgState=data.imgState;if(data.illust){illustBase64=data.illust;loadIllustImage(illustBase64,false);document.getElementById('uploadFileName').textContent="저장된 일러스트 불러옴";document.getElementById('dropZone').style.display='none';document.getElementById('uploadPreview').style.display='block';document.getElementById('imageControlPanel').style.display='block';canvas.classList.add('draggable');}['mon','tue','wed','thu','fri','sat','sun'].forEach(day=>toggleInputs(day));}
+    function clearData(){if(!confirm("모든 텍스트를 초기화하시겠습니까?"))return;document.querySelectorAll('.sched-input').forEach(el=>{el.value='';});document.querySelectorAll('.platform-select').forEach(el=>{el.value='none';});document.querySelectorAll('.sched-toggle').forEach(toggle=>{toggle.checked=true;toggleInputs(toggle.id.replace('_type',''));});removeIllust();saveData();drawSchedule();}
+    function waitTypekit(){return new Promise(resolve=>{if(typeof Typekit!=='undefined'){resolve();return;}let tries=0;const iv=setInterval(()=>{tries++;if(typeof Typekit!=='undefined'||tries>60){clearInterval(iv);resolve();}},100);});}
+    async function waitFonts(){const seen=new Set();const loads=[];Object.values(config.textStyles).forEach(s=>{if(s&&s.font&&!seen.has(s.font)){seen.add(s.font);loads.push(document.fonts.load(s.weight+' 32px "'+s.font+'"').catch(()=>{}));}});await document.fonts.ready;await Promise.all(loads);const warm=document.createElement('div');warm.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';Object.values(config.textStyles).forEach(s=>{if(s&&s.font){const sp=document.createElement('span');sp.style.fontFamily='"'+s.font+'"';sp.style.fontWeight=s.weight||'normal';sp.style.fontSize='32px';sp.textContent='가나다ABC';warm.appendChild(sp);}});document.body.appendChild(warm);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));document.body.removeChild(warm);}
+    window.onload=function(){setupDropZone();setupCanvasDrag();const saved=localStorage.getItem('scheduleDataFinal');if(saved)loadData();else['mon','tue','wed','thu','fri','sat','sun'].forEach(day=>toggleInputs(day));waitTypekit().then(()=>waitFonts()).then(()=>drawSchedule());document.querySelectorAll('input,select').forEach(el=>{if(el.type!=='file'&&el.id!=='zoomSlider'){el.addEventListener('input',()=>{saveData();drawSchedule();});el.addEventListener('change',()=>{saveData();drawSchedule();});}});};
+    async function downloadImage(){try{await drawSchedule();const link=document.createElement('a');link.download='weekly_schedule_fhd.png';link.href=canvas.toDataURL('image/png');link.click();}catch{alert("이미지 저장 실패!\nVS Code에서 Live Server로 열어주세요!");}}
+</script>
+
+</body>
+</html>
